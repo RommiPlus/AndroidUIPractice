@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">计算器</string>
+    <string name="hint_text">表达式</string>
+</resources>
