@@ -104,7 +104,7 @@ public class MainActivity extends AppCompatActivity {
         while (!next.equals(EQUAL)) {
             current = String.valueOf(expression.charAt(infixIndex));
             next = String.valueOf(expression.charAt(infixIndex + 1));
-            if (isMatchesNumber(current) && isMatchesNumber(next)) {
+            if (isMatchesNumberOrDot(current) && isMatchesNumberOrDot(next)) {
                 // 如果是数字，直接添加进字符中
                 // 如果前下一个字符也是数字，把他们并到一起
                 if (isMul == 0) {
@@ -113,11 +113,11 @@ public class MainActivity extends AppCompatActivity {
                     postfix[postfixIndex] = postfix[postfixIndex].concat(next);
                 }
                 isMul = 1;
-            } else if (isMatchesNumber(current) && next.matches("[^\\d.]") && isMul == 0) {
+            } else if (isMatchesNumberOrDot(current) && isNotNumberAndDot(next) && isMul == 0) {
                 postfix[postfixIndex] = current;
                 postfixIndex++;
                 postfix[postfixIndex] = "";
-            } else if (isMatchesNumber(current) && next.matches("[^\\d.]") && isMul == 1) {
+            } else if (isMatchesNumberOrDot(current) && isNotNumberAndDot(next) && isMul == 1) {
                 isMul = 0;
                 postfixIndex++;
                 postfix[postfixIndex] = "";
@@ -156,7 +156,11 @@ public class MainActivity extends AppCompatActivity {
         return postfix;
     }
 
-    private boolean isMatchesNumber(String current) {
+    private boolean isNotNumberAndDot(String next) {
+        return next.matches("[^\\d.]");
+    }
+
+    private boolean isMatchesNumberOrDot(String current) {
         return current.matches("[\\d.]");
     }
 
