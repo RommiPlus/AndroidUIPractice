@@ -109,16 +109,16 @@ public class MainActivity extends AppCompatActivity {
                 // 如果前下一个字符也是数字，把他们并到一起
                 if (isMul == 0) {
                     postfix[postfixIndex] = postfix[postfixIndex] + current.concat(next);
+                    isMul = 1;
                 } else {
                     postfix[postfixIndex] = postfix[postfixIndex].concat(next);
                 }
-                isMul = 1;
-            } else if (isMatchesNumberOrDot(current) && isNotNumberAndDot(next) && isMul == 0) {
-                postfix[postfixIndex] = current;
-                postfixIndex++;
-                postfix[postfixIndex] = "";
-            } else if (isMatchesNumberOrDot(current) && isNotNumberAndDot(next) && isMul == 1) {
-                isMul = 0;
+            } else if (isMatchesNumberOrDot(current) && isNotNumberAndDot(next)) {
+                if(isMul == 0) {
+                    postfix[postfixIndex] = current;
+                } else {
+                    isMul = 0;
+                }
                 postfixIndex++;
                 postfix[postfixIndex] = "";
             } else if (current.equals(ADD) || current.equals(MINUS)) {
@@ -143,6 +143,7 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 return new String[]{"格式错误"};
             }
+
             infixIndex++;
         }
 
