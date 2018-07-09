@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
-import android.text.TextUtils;
 import android.view.View;
 import android.view.Window;
 import android.widget.AdapterView;
@@ -12,6 +11,7 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.GridView;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Stack;
 
@@ -74,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
     private void ExecuteExpression() {
         String result = null;
         try {
-            result = calculatePost(convertToPostfixExpression(toDoString));
+            result = calculatePost(convertToPostfixExpression(splitExpression2Elements(toDoString)));
         } catch (Exception e) {
             isExecuteNow = false;
         }
@@ -89,80 +89,66 @@ public class MainActivity extends AppCompatActivity {
     /**
      * 中缀表达式转换为后缀表达式
      *
-     * @param expression
+     * @param array
      */
-    private String[] convertToPostfixExpression(String expression) {
-        int infixIndex = 0;
+    private String[] convertToPostfixExpression(String[] array) {
         int postfixIndex = 0;
-        String postfix[] = new String[expression.length()];
-        postfix[0] = "";
+        String postfix[] = new String[array.length];
         Stack<String> stack = new Stack<>();
-        String top;//栈顶元素
-        String current;//当前元素
-        String next = "";//当前元素的下一个元素
-        int isMul = 0;//判断是否是复数
-        while (!next.equals(EQUAL)) {
-            current = String.valueOf(expression.charAt(infixIndex));
-            next = String.valueOf(expression.charAt(infixIndex + 1));
-            if (isMatchesNumberOrDot(current) && isMatchesNumberOrDot(next)) {
-                // 如果是数字，直接添加进字符中
-                // 如果前下一个字符也是数字，把他们并到一起
-                if (isMul == 0) {
-                    postfix[postfixIndex] = postfix[postfixIndex] + current.concat(next);
-                    isMul = 1;
-                } else {
-                    postfix[postfixIndex] = postfix[postfixIndex].concat(next);
-                }
-            } else if (isMatchesNumberOrDot(current) && isNotNumberAndDot(next)) {
-                if(isMul == 0) {
-                    postfix[postfixIndex] = current;
-                } else {
-                    isMul = 0;
-                }
-                postfixIndex++;
-                postfix[postfixIndex] = "";
-            } else if (current.equals(ADD) || current.equals(MINUS)) {
-                //如果是加减符号
+
+        for (String element : array) {
+            if (isMatchesNumber(element)) {
+                postfix[postfixIndex] = element;
+                postfixIndex ++;
+            } else if (element.equals(ADD) || element.equals(MINUS)) {
                 if (stack.isEmpty()) {
-                    //空栈就直接入栈
-                    stack.push(current);
+                    stack.push(element);
                 } else {
                     //弹出优先级高于加减的运算符(因为加减运算符优先级最低)
                     while (!stack.isEmpty()) {
-                        top = stack.peek();
+                        String top = stack.peek();
                         stack.pop();
                         postfix[postfixIndex] = top;
-                        postfixIndex++;
-                        postfix[postfixIndex] = "";
+                        postfixIndex ++;
                     }
-                    stack.push(current);
+                    stack.push(element);
                 }
-            } else if (current.equals(MULTIPLY) || current.equals(DIVIDE)) {
-                //如果是乘除、左括号，优先级高，直接入栈
-                stack.push(current);
+            } else if (element.equals(MULTIPLY) || element.equals(DIVIDE)) {
+                stack.push(element);
             } else {
                 return new String[]{"格式错误"};
             }
-
-            infixIndex++;
         }
 
         //字符遍历完后将栈中剩余的字符出栈
         while (!stack.isEmpty()) {
             postfix[postfixIndex] = stack.peek();
-            postfixIndex++;
+            postfixIndex ++;
             stack.pop();
         }
 
         return postfix;
     }
 
-    private boolean isNotNumberAndDot(String next) {
-        return next.matches("[^\\d.]");
+    /**
+     * convert Expression to single element.for example:
+     *      123+5*2-6 -> {"123", "+", "5", "*", "2", "-", "6"}
+     * @param expression
+     * @return
+     */
+    private String[] splitExpression2Elements(String expression) {
+        String resultString = Arrays.toString(
+                expression
+                        .substring(0, expression.indexOf("="))
+                        .split("((?<=[^0-9])|(?=[^0-9]))"));
+        return resultString
+                .substring(resultString.indexOf("[") + 1, resultString.indexOf("]"))
+                .replaceAll(" ", "")
+                .split(",");
     }
 
-    private boolean isMatchesNumberOrDot(String current) {
-        return current.matches("[\\d.]");
+    private boolean isMatchesNumber(String current) {
+        return current.matches("\\d+");
     }
 
 
@@ -174,9 +160,6 @@ public class MainActivity extends AppCompatActivity {
     private String calculatePost(String post[]) {
         LinkedList<String> list = new LinkedList<>();
         for (String s : post) {
-            if (TextUtils.isEmpty(s)) continue;
-
-            // 遇到数字就入栈
             if (!isFourOperatorString(s) || list.isEmpty()) {
                 list.push(s);
             } else {
