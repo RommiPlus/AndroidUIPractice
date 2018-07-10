@@ -38,14 +38,14 @@ public class CalculatorPresenter {
 
     public void doCalculate(String item) {
         switch (item) {
-            case CalculatorPresenter.EQUAL:
+            case EQUAL:
                 String result = calculateExpression();
                 updateTodoExpression(getResultExpression(result));
                 mTask.updateOutputResult(formatResult());
                 updateDoneExpression();
                 break;
 
-            case CalculatorPresenter.CLEAR:
+            case CLEAR:
                 clearData();
                 break;
 
@@ -70,7 +70,8 @@ public class CalculatorPresenter {
     }
 
     /**
-     * convert Expression to single element.for example:
+     * convert Expression to single element.<br><br>
+     * for example:
      * 123+5*2-6 -> {"123", "+", "5", "*", "2", "-", "6"}
      *
      * @param expression
@@ -82,7 +83,8 @@ public class CalculatorPresenter {
     }
 
     /**
-     * split Expression to single element. for example:
+     * split Expression to single element. <br><br>
+     * for example:<br>
      * ["123", " +", " 5", " *", " 2", " -", " 6"] -> {"123", "+", "5", "*", "2", "-", "6"}
      *
      * @param resultString
@@ -97,7 +99,8 @@ public class CalculatorPresenter {
     }
 
     /**
-     * split Expression to single element. for example:
+     * split Expression to single element. <br><br>
+     *     for example:
      * 123+5*2-6 -> {"123", " +", " 5", " *", " 2", " -", " 6"}
      *
      * @param expression
