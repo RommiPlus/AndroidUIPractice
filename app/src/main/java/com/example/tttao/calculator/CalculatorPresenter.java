@@ -7,7 +7,7 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Stack;
 
-public class CalculatorModel {
+public class CalculatorPresenter {
     public static final String FONT_COLOR_858585 = "<font color='#858585'>";
     public static final String FONT = "</font>";
     public static final String FONT_COLOR_CD2626 = "<font color='#CD2626'>";
@@ -19,20 +19,64 @@ public class CalculatorModel {
     public static final String MULTIPLY = "x";
     public static final String DIVIDE = "/";
 
-    private Context context;
+    private String doneExpression = "";//已经完成的表达式
+    private String toDoExpression = "";//待计算的表达式
 
-    public CalculatorModel(Context context) {
+    private Context context;
+    private CalculatorTask mTask;
+
+    public CalculatorPresenter(Context context, CalculatorTask task) {
         this.context = context;
+        this.mTask = task;
+    }
+
+    public void clearData() {
+        doneExpression = "";
+        toDoExpression = "";
+        mTask.clearEditText();
+    }
+
+    public void doCalculate(String item) {
+        switch (item) {
+            case CalculatorPresenter.EQUAL:
+                String result = calculateExpression();
+                updateTodoExpression(getResultExpression(result));
+                mTask.updateOutputResult(formatResult());
+                updateDoneExpression();
+                break;
+
+            case CalculatorPresenter.CLEAR:
+                clearData();
+                break;
+
+            default:
+                updateTodoExpression(item);
+                mTask.updateOutputResult(formatResult());
+                break;
+        }
+    }
+
+    private void updateTodoExpression(String resultExpression) {
+        toDoExpression += resultExpression;
+    }
+
+    @NonNull
+    public String getResultExpression(String result) {
+        return EQUAL + result;
+    }
+
+    public void updateDoneExpression() {
+        doneExpression = doneExpression + toDoExpression + BR;
     }
 
     /**
      * convert Expression to single element.for example:
-     * 123+5*2-6= -> {"123", "+", "5", "*", "2", "-", "6"}
+     * 123+5*2-6 -> {"123", "+", "5", "*", "2", "-", "6"}
      *
      * @param expression
      * @return
      */
-     String[] splitExpression2Elements(String expression) {
+    String[] splitExpression2Elements(String expression) {
         String resultString = Arrays.toString(splitExpression(expression));
         return convertArrayStringToArray(resultString);
     }
@@ -54,7 +98,7 @@ public class CalculatorModel {
 
     /**
      * split Expression to single element. for example:
-     * 123+5*2-6= -> {"123", " +", " 5", " *", " 2", " -", " 6"}
+     * 123+5*2-6 -> {"123", " +", " 5", " *", " 2", " -", " 6"}
      *
      * @param expression
      * @return
@@ -62,23 +106,17 @@ public class CalculatorModel {
     @NonNull
     public String[] splitExpression(String expression) {
         return expression
-                .substring(0, expression.indexOf("="))
                 .split("((?<=[^0-9])|(?=[^0-9]))");
     }
 
     /**
      * 输出表达式的值
-     * @param expression
+     *
      */
-    public String calculateExpression(String expression) {
-        try {
-            String[] splitString = splitExpression2Elements(expression);
-            String[] postfixExpression = convertToPostfixExpression(splitString);
-            return calculatePostfixExpression(postfixExpression);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
+    public String calculateExpression() {
+        String[] splitString = splitExpression2Elements(toDoExpression);
+        String[] postfixExpression = convertToPostfixExpression(splitString);
+        return calculatePostfixExpression(postfixExpression);
     }
 
     /**
@@ -118,7 +156,7 @@ public class CalculatorModel {
         //字符遍历完后将栈中剩余的字符出栈
         while (!stack.isEmpty()) {
             postfix[postfixIndex] = stack.peek();
-            postfixIndex ++;
+            postfixIndex++;
             stack.pop();
         }
 
@@ -194,7 +232,7 @@ public class CalculatorModel {
     }
 
     @NonNull
-    static String formatResult(String doneExpression, String toDoExpression) {
+    public String formatResult() {
         return FONT_COLOR_858585 + doneExpression + FONT + FONT_COLOR_CD2626 + toDoExpression + FONT;
     }
 

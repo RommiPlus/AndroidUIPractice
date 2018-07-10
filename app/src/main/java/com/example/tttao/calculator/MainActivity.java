@@ -10,23 +10,20 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.GridView;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements CalculatorTask {
 
     private EditText editText = null;//输入框
 
-    private String doneExpression = "";//已经完成的表达式
-    private String toDoExpression = "";//待计算的表达式
-    private boolean isUpdateDoneExpression = false;//判断是否执行完，如果执行完需要加换行符号
-
     //按钮中的字符
     private final String[] CALCULATOR_PRESENT_ARRAY = new String[]{
-            "9", "8", "7", CalculatorModel.ADD,
-            "6", "5", "4", CalculatorModel.MINUS,
-            "3", "2", "1", CalculatorModel.MULTIPLY,
-            "0", CalculatorModel.CLEAR, CalculatorModel.EQUAL, CalculatorModel.DIVIDE,
+            "9", "8", "7", CalculatorPresenter.ADD,
+            "6", "5", "4", CalculatorPresenter.MINUS,
+            "3", "2", "1", CalculatorPresenter.MULTIPLY,
+            "0", CalculatorPresenter.CLEAR, CalculatorPresenter.EQUAL, CalculatorPresenter.DIVIDE,
     };
 
-    private CalculatorModel model;
+    public CalculatorPresenter presenter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -48,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
         //触发事件
         gridView.setOnItemClickListener(new OnButtonItemClickListener());
 
-        model = new CalculatorModel(this);
+        presenter = new CalculatorPresenter(this, this);
     }
 
 
@@ -56,37 +53,7 @@ public class MainActivity extends AppCompatActivity {
     private class OnButtonItemClickListener implements AdapterView.OnItemClickListener {
         @Override
         public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-            switch (getItem(adapterView, position)) {
-                case CalculatorModel.EQUAL:
-                    toDoExpression += CalculatorModel.EQUAL;
-
-                    String result = model.calculateExpression(toDoExpression);
-                    if (result != null) {
-                        toDoExpression += result;
-                        isUpdateDoneExpression = true;
-                    } else {
-                        isUpdateDoneExpression = false;
-                    }
-
-                    updateCalculateResult();
-                    break;
-
-                case CalculatorModel.CLEAR:
-                    clearData();
-                    break;
-
-                default:
-                    if (isUpdateDoneExpression) {
-                        doneExpression = doneExpression + toDoExpression + CalculatorModel.BR;
-                        isUpdateDoneExpression = false;
-                    }
-
-                    toDoExpression += getItem(adapterView, position);
-
-                    updateCalculateResult();
-                    break;
-            }
-
+            presenter.doCalculate(getItem(adapterView, position));
         }
 
         private String getItem(AdapterView<?> adapterView, int position) {
@@ -94,18 +61,17 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void updateCalculateResult() {
+    @Override
+    public void updateOutputResult(String formatResult) {
         //显示内容
-        editText.setText(Html.fromHtml(CalculatorModel.formatResult(doneExpression, toDoExpression)));
+        editText.setText(Html.fromHtml(formatResult));
         //设置光标在最后的位置
         editText.setSelection(editText.getText().length());
     }
 
-    private void clearData() {
-        doneExpression = "";
-        toDoExpression = "";
+    @Override
+    public void clearEditText() {
         editText.setText("");
-        isUpdateDoneExpression = false;
     }
 
 
