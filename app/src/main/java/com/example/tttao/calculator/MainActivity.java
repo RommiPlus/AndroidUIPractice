@@ -1,7 +1,6 @@
 package com.example.tttao.calculator;
 
 import android.os.Bundle;
-import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
 import android.view.View;
@@ -11,36 +10,23 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.GridView;
 
-import java.util.Arrays;
-import java.util.LinkedList;
-import java.util.Stack;
-
 public class MainActivity extends AppCompatActivity {
-    public static final String FONT_COLOR_858585 = "<font color='#858585'>";
-    public static final String FONT = "</font>";
-    public static final String FONT_COLOR_CD2626 = "<font color='#CD2626'>";
-    public static final String BR = "<br>";
-    public static final String CLEAR = "clear";
-    public static final String EQUAL = "=";
-    public static final String ADD = "+";
-    public static final String MINUS = "-";
-    public static final String MULTIPLY = "x";
-    public static final String DIVIDE = "/";
 
     private EditText editText = null;//输入框
 
-    private String doneString = "";//已经完成的表达式
-    private String toDoString = "";//待计算的表达式
-    private boolean isExecuteNow = false;//判断是否执行完，如果执行完需要加换行符号
+    private String doneExpression = "";//已经完成的表达式
+    private String toDoExpression = "";//待计算的表达式
+    private boolean isUpdateDoneExpression = false;//判断是否执行完，如果执行完需要加换行符号
 
     //按钮中的字符
-    private final String[] buttons = new String[]{
-            "9", "8", "7", ADD,
-            "6", "5", "4", MINUS,
-            "3", "2", "1", MULTIPLY,
-            "0", CLEAR, EQUAL, DIVIDE,
+    private final String[] CALCULATOR_PRESENT_ARRAY = new String[]{
+            "9", "8", "7", CalculatorModel.ADD,
+            "6", "5", "4", CalculatorModel.MINUS,
+            "3", "2", "1", CalculatorModel.MULTIPLY,
+            "0", CalculatorModel.CLEAR, CalculatorModel.EQUAL, CalculatorModel.DIVIDE,
     };
 
+    private CalculatorModel model;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,191 +42,49 @@ public class MainActivity extends AppCompatActivity {
         editText.setKeyListener(null);
 
         //设置适配器
-        ArrayAdapter adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, buttons);
+        ArrayAdapter adapter = new ArrayAdapter<>(this, android.R.layout.simple_list_item_1, CALCULATOR_PRESENT_ARRAY);
         gridView.setAdapter(adapter);
 
         //触发事件
         gridView.setOnItemClickListener(new OnButtonItemClickListener());
+
+        model = new CalculatorModel(this);
     }
 
-    @NonNull
-    private String formatResult() {
-        return FONT_COLOR_858585 + doneString + FONT + FONT_COLOR_CD2626 + toDoString + FONT;
-    }
-
-    /**
-     * 输出表达式的值
-     */
-    private void ExecuteExpression() {
-        String result = null;
-        try {
-            result = calculatePost(convertToPostfixExpression(splitExpression2Elements(toDoString)));
-        } catch (Exception e) {
-            isExecuteNow = false;
-        }
-        toDoString += result;
-        //显示内容
-        editText.setText(Html.fromHtml(formatResult()));
-        //设置光标在最后的位置
-        editText.setSelection(editText.getText().length());
-        isExecuteNow = true;
-    }
-
-    /**
-     * 中缀表达式转换为后缀表达式
-     *
-     * @param array
-     */
-    private String[] convertToPostfixExpression(String[] array) {
-        int postfixIndex = 0;
-        String postfix[] = new String[array.length];
-        Stack<String> stack = new Stack<>();
-
-        for (String element : array) {
-            if (isMatchesNumber(element)) {
-                postfix[postfixIndex] = element;
-                postfixIndex ++;
-            } else if (element.equals(ADD) || element.equals(MINUS)) {
-                if (stack.isEmpty()) {
-                    stack.push(element);
-                } else {
-                    //弹出优先级高于加减的运算符(因为加减运算符优先级最低)
-                    while (!stack.isEmpty()) {
-                        String top = stack.peek();
-                        stack.pop();
-                        postfix[postfixIndex] = top;
-                        postfixIndex ++;
-                    }
-                    stack.push(element);
-                }
-            } else if (element.equals(MULTIPLY) || element.equals(DIVIDE)) {
-                stack.push(element);
-            } else {
-                return new String[]{"格式错误"};
-            }
-        }
-
-        //字符遍历完后将栈中剩余的字符出栈
-        while (!stack.isEmpty()) {
-            postfix[postfixIndex] = stack.peek();
-            postfixIndex ++;
-            stack.pop();
-        }
-
-        return postfix;
-    }
-
-    /**
-     * convert Expression to single element.for example:
-     *      123+5*2-6 -> {"123", "+", "5", "*", "2", "-", "6"}
-     * @param expression
-     * @return
-     */
-    private String[] splitExpression2Elements(String expression) {
-        String resultString = Arrays.toString(
-                expression
-                        .substring(0, expression.indexOf("="))
-                        .split("((?<=[^0-9])|(?=[^0-9]))"));
-        return resultString
-                .substring(resultString.indexOf("[") + 1, resultString.indexOf("]"))
-                .replaceAll(" ", "")
-                .split(",");
-    }
-
-    private boolean isMatchesNumber(String current) {
-        return current.matches("\\d+");
-    }
-
-
-    /**
-     * 根据后缀表达式计算结果
-     *
-     * @param post
-     */
-    private String calculatePost(String post[]) {
-        LinkedList<String> list = new LinkedList<>();
-        for (String s : post) {
-            if (!isFourOperatorString(s) || list.isEmpty()) {
-                list.push(s);
-            } else {
-                // 遇到运算符就对栈顶的两个数字运算
-                double num1 = Double.valueOf(list.pop());
-                if (isDivideZero(s, num1)) {
-                    return "除数不能为空";
-                }
-                list.push(String.valueOf(calculate(Double.valueOf(list.pop()), num1, s)));
-            }
-        }
-
-        if (!list.isEmpty()) {
-            return list.pop();
-        }
-
-        return null;
-    }
-
-    private boolean isDivideZero(String s, double divisor) {
-        return s.equals(DIVIDE) && divisor == 0;
-    }
-
-    private static double calculate(double num2, double num1, String op) {
-        switch (op) {
-            case ADD:
-                return add(num2, num1);
-            case MINUS:
-                return minus(num2, num1);
-            case MULTIPLY:
-                return multiply(num2, num1);
-            case DIVIDE:
-                return divide(num1, multiply(num2, 1.0));
-            default:
-                return 0;
-        }
-    }
-
-    private static double divide(double num1, double num2) {
-        return num2 / num1;
-    }
-
-    private static double multiply(double num2, double num1) {
-        return num2 * num1;
-    }
-
-    private static double minus(double num2, double num1) {
-        return num2 - num1;
-    }
-
-    private static double add(double num2, double num1) {
-        return num2 + num1;
-    }
 
     //触发事件
     private class OnButtonItemClickListener implements AdapterView.OnItemClickListener {
         @Override
         public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-            if (getItem(adapterView, position).equals(EQUAL)) {
-                toDoString += EQUAL;
-                ExecuteExpression();
-            } else if (getItem(adapterView, position).equals(CLEAR)) {
-                doneString = "";
-                toDoString = "";
-                isExecuteNow = false;
-                editText.setText("");
-            } else {
-                if (isExecuteNow) {
-                    /*把待计算的表达式加到已计算表达式中，后面再加个换行符
-                     * */
-                    doneString = doneString + toDoString + BR;
-                    isExecuteNow = false;
-                    toDoString = getItem(adapterView, position);
-                } else {
-                    toDoString += getItem(adapterView, position);
-                }
+            switch (getItem(adapterView, position)) {
+                case CalculatorModel.EQUAL:
+                    toDoExpression += CalculatorModel.EQUAL;
 
-                //显示内容
-                editText.setText(Html.fromHtml(formatResult()));
-                //设置光标在最后的位置
-                editText.setSelection(editText.getText().length());
+                    String result = model.calculateExpression(toDoExpression);
+                    if (result != null) {
+                        toDoExpression += result;
+                        isUpdateDoneExpression = true;
+                    } else {
+                        isUpdateDoneExpression = false;
+                    }
+
+                    updateCalculateResult();
+                    break;
+
+                case CalculatorModel.CLEAR:
+                    clearData();
+                    break;
+
+                default:
+                    if (isUpdateDoneExpression) {
+                        doneExpression = doneExpression + toDoExpression + CalculatorModel.BR;
+                        isUpdateDoneExpression = false;
+                    }
+
+                    toDoExpression += getItem(adapterView, position);
+
+                    updateCalculateResult();
+                    break;
             }
 
         }
@@ -250,12 +94,18 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * @param text
-     * @return
-     */
-    private boolean isFourOperatorString(String text) {
-        return text.equals(ADD) || text.equals(MINUS) || text.equals(MULTIPLY) || text.equals(DIVIDE);
+    private void updateCalculateResult() {
+        //显示内容
+        editText.setText(Html.fromHtml(CalculatorModel.formatResult(doneExpression, toDoExpression)));
+        //设置光标在最后的位置
+        editText.setSelection(editText.getText().length());
+    }
+
+    private void clearData() {
+        doneExpression = "";
+        toDoExpression = "";
+        editText.setText("");
+        isUpdateDoneExpression = false;
     }
 
 
