@@ -3,7 +3,6 @@ package com.example.tttao.calculator;
 import android.content.Context;
 import android.support.annotation.NonNull;
 
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.Stack;
 
@@ -18,10 +17,6 @@ public class CalculatorPresenter {
     public static final String MINUS = "-";
     public static final String MULTIPLY = "x";
     public static final String DIVIDE = "/";
-    public static final String BRACKET_LEFT = "[";
-    public static final String BRACKET_RIGHT = "]";
-    public static final String SPACE = " ";
-    public static final String COMMA = ",";
 
     private String doneExpression = "";//已经完成的表达式
     private String toDoExpression = "";//待计算的表达式
@@ -44,7 +39,7 @@ public class CalculatorPresenter {
         switch (item) {
             case EQUAL:
                 String result = calculateExpression();
-                updateTodoExpression(getResultExpression(result));
+                updateTodoExpression(EQUAL + result);
                 mTask.updateOutputResult(formatResult());
                 updateDoneExpression();
                 clearToDoExpression();
@@ -69,11 +64,6 @@ public class CalculatorPresenter {
         toDoExpression += resultExpression;
     }
 
-    @NonNull
-    public String getResultExpression(String result) {
-        return EQUAL + result;
-    }
-
     public void updateDoneExpression() {
         doneExpression = doneExpression + toDoExpression + BR;
     }
@@ -86,26 +76,8 @@ public class CalculatorPresenter {
      * @param expression
      * @return
      */
-    String[] splitExpression2Elements(String expression) {
-        String resultString = Arrays.toString(splitExpression(expression));
-        return resultString
-                .substring(resultString.indexOf(BRACKET_LEFT) + 1, resultString.indexOf(BRACKET_RIGHT))
-                .replaceAll(SPACE, "")
-                .split(COMMA);
-    }
-
-    /**
-     * split Expression to single element. <br><br>
-     *     for example:
-     * 123+5*2-6 -> {"123", " +", " 5", " *", " 2", " -", " 6"}
-     *
-     * @param expression
-     * @return
-     */
-    @NonNull
-    public String[] splitExpression(String expression) {
-        return expression
-                .split("((?<=[^0-9])|(?=[^0-9]))");
+    public String[] splitExpression2Elements(String expression) {
+        return expression.split("((?<=[^0-9])|(?=[^0-9]))");
     }
 
     /**
