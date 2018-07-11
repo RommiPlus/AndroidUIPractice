@@ -18,6 +18,10 @@ public class CalculatorPresenter {
     public static final String MINUS = "-";
     public static final String MULTIPLY = "x";
     public static final String DIVIDE = "/";
+    public static final String BRACKET_LEFT = "[";
+    public static final String BRACKET_RIGHT = "]";
+    public static final String SPACE = " ";
+    public static final String COMMA = ",";
 
     private String doneExpression = "";//已经完成的表达式
     private String toDoExpression = "";//待计算的表达式
@@ -32,7 +36,7 @@ public class CalculatorPresenter {
 
     public void clearData() {
         doneExpression = "";
-        toDoExpression = "";
+        clearToDoExpression();
         mTask.clearEditText();
     }
 
@@ -43,6 +47,7 @@ public class CalculatorPresenter {
                 updateTodoExpression(getResultExpression(result));
                 mTask.updateOutputResult(formatResult());
                 updateDoneExpression();
+                clearToDoExpression();
                 break;
 
             case CLEAR:
@@ -54,6 +59,10 @@ public class CalculatorPresenter {
                 mTask.updateOutputResult(formatResult());
                 break;
         }
+    }
+
+    private void clearToDoExpression() {
+        toDoExpression = "";
     }
 
     private void updateTodoExpression(String resultExpression) {
@@ -79,23 +88,10 @@ public class CalculatorPresenter {
      */
     String[] splitExpression2Elements(String expression) {
         String resultString = Arrays.toString(splitExpression(expression));
-        return convertArrayStringToArray(resultString);
-    }
-
-    /**
-     * split Expression to single element. <br><br>
-     * for example:<br>
-     * ["123", " +", " 5", " *", " 2", " -", " 6"] -> {"123", "+", "5", "*", "2", "-", "6"}
-     *
-     * @param resultString
-     * @return
-     */
-    @NonNull
-    public String[] convertArrayStringToArray(String resultString) {
         return resultString
-                .substring(resultString.indexOf("[") + 1, resultString.indexOf("]"))
-                .replaceAll(" ", "")
-                .split(",");
+                .substring(resultString.indexOf(BRACKET_LEFT) + 1, resultString.indexOf(BRACKET_RIGHT))
+                .replaceAll(SPACE, "")
+                .split(COMMA);
     }
 
     /**
