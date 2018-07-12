@@ -82,12 +82,46 @@ public class CalculatorPresenter {
 
     /**
      * 输出表达式的值
-     *
      */
     public String calculateExpression() {
+        if (isLegalExpression(toDoExpression)) {
+            String[] splitString = splitExpression2Elements(toDoExpression);
+            String[] postfixExpression = convertToPostfixExpression(splitString);
+            return calculatePostfixExpression(postfixExpression);
+        }
+        return context.getString(R.string.format_error);
+    }
+
+    public boolean isLegalExpression(String toDoExpression) {
         String[] splitString = splitExpression2Elements(toDoExpression);
-        String[] postfixExpression = convertToPostfixExpression(splitString);
-        return calculatePostfixExpression(postfixExpression);
+        if (isStartAndEndStringIllegal(splitString)) {
+            return false;
+        }
+
+        for (int i = 0; i < splitString.length; i++) {
+            if (isCurrentAndNextElementNumber(splitString, i))
+                return false;
+
+            if (isCurrentAndNextElementFourOperator(splitString, i))
+                return false;
+
+            if (!(isMatchesNumber(splitString[i]) || isFourOperatorString(splitString[i])))
+                return false;
+        }
+
+        return true;
+    }
+
+    public boolean isCurrentAndNextElementFourOperator(String[] splitString, int i) {
+        return isFourOperatorString(splitString[i]) && (i + 1) < splitString.length && isFourOperatorString(splitString[i + 1]);
+    }
+
+    public boolean isCurrentAndNextElementNumber(String[] splitString, int i) {
+        return isMatchesNumber(splitString[i]) && (i + 1) < splitString.length && isMatchesNumber(splitString[i + 1]);
+    }
+
+    public boolean isStartAndEndStringIllegal(String[] splitString) {
+        return splitString[0].isEmpty() || !isMatchesNumber(splitString[0]) || isFourOperatorString(splitString[splitString.length - 1]);
     }
 
     /**
@@ -117,10 +151,8 @@ public class CalculatorPresenter {
                     }
                     stack.push(element);
                 }
-            } else if (element.equals(MULTIPLY) || element.equals(DIVIDE)) {
-                stack.push(element);
             } else {
-                return new String[]{context.getString(R.string.format_error)};
+                stack.push(element);
             }
         }
 
@@ -147,16 +179,12 @@ public class CalculatorPresenter {
             } else {
                 // 遇到运算符就对栈顶的两个数字运算
                 double num1 = getNumber(list);
-                if (isDivideZero(op, num1)) return context.getString(R.string.deivice_not_zero);
+                if (isDivideZero(DIVIDE, num1)) return context.getString(R.string.deivice_not_zero);
                 list.push(String.valueOf(calculate(getNumber(list), num1, op)));
             }
         }
 
-        if (!list.isEmpty()) {
-            return list.pop();
-        }
-
-        return null;
+        return list.pop();
     }
 
     public Double getNumber(LinkedList<String> list) {
