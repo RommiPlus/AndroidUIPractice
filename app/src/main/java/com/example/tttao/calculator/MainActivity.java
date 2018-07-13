@@ -10,16 +10,19 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.GridView;
 
+import com.example.tttao.calculator.model.Calculator;
+import com.example.tttao.calculator.presenter.CalculatorPresenter;
+
 public class MainActivity extends AppCompatActivity implements CalculatorTask {
 
     private EditText editText = null;//输入框
 
     //按钮中的字符
     private final String[] CALCULATOR_PRESENT_ARRAY = new String[]{
-            "9", "8", "7", CalculatorPresenter.ADD,
-            "6", "5", "4", CalculatorPresenter.MINUS,
-            "3", "2", "1", CalculatorPresenter.MULTIPLY,
-            "0", CalculatorPresenter.CLEAR, CalculatorPresenter.EQUAL, CalculatorPresenter.DIVIDE,
+            "9", "8", "7", Calculator.ADD,
+            "6", "5", "4", Calculator.MINUS,
+            "3", "2", "1", Calculator.MULTIPLY,
+            "0", CalculatorPresenter.CLEAR, CalculatorPresenter.EQUAL, Calculator.DIVIDE,
     };
 
     public CalculatorPresenter presenter;
