@@ -1,4 +1,4 @@
-package com.example.tttao.calculator;
+package com.example.tttao.calculator.view;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
@@ -10,8 +10,10 @@ import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.GridView;
 
+import com.example.tttao.calculator.R;
 import com.example.tttao.calculator.model.Calculator;
 import com.example.tttao.calculator.presenter.CalculatorPresenter;
+import com.example.tttao.calculator.task.CalculatorTask;
 
 public class MainActivity extends AppCompatActivity implements CalculatorTask {
 

@@ -3,7 +3,7 @@ package com.example.tttao.calculator.presenter;
 import android.content.Context;
 import android.support.annotation.NonNull;
 
-import com.example.tttao.calculator.CalculatorTask;
+import com.example.tttao.calculator.task.CalculatorTask;
 import com.example.tttao.calculator.R;
 import com.example.tttao.calculator.model.Calculator;
 import com.example.tttao.calculator.model.Expression;

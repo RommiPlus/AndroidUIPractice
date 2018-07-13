@@ -1,4 +1,4 @@
-package com.example.tttao.calculator;
+package com.example.tttao.calculator.task;
 
 public interface CalculatorTask {
 
